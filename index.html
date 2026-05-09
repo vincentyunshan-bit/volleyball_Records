@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>排球技术统计 v2.1</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --success: #16a34a;
+      --success-soft: #dcfce7;
+      --warning: #d97706;
+      --warning-soft: #fef3c7;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 180px);
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 16px;
+      padding-bottom: 92px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin: -16px -16px 16px;
+      padding: 14px 16px;
+      background: rgba(246, 247, 251, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+    }
+
+    .brand {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .brand .sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 12px;
+      line-height: 1.2;
+    }
+
+    .card h2 { font-size: 20px; }
+    .card h3 { font-size: 17px; }
+
+    .grid { display: grid; gap: 12px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    @media (max-width: 760px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .app { padding: 12px; padding-bottom: 96px; }
+      .topbar { margin: -12px -12px 12px; padding: 12px; }
+      .brand h1 { font-size: 19px; }
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 16px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform .05s ease, opacity .2s ease, background .2s ease;
+      touch-action: manipulation;
+    }
+
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-ghost { background: #f3f4f6; color: #111827; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-warning { background: var(--warning-soft); color: #92400e; }
+    .btn-success { background: var(--success-soft); color: #166534; }
+    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .between { justify-content: space-between; }
+
+    .player-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 130px 44px;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 760px) {
+      .player-row { grid-template-columns: 64px 1fr; }
+      .player-row select { grid-column: span 1; }
+      .player-row button { grid-column: span 1; }
+    }
+
+    .notice {
+      border-radius: 14px;
+      padding: 12px;
+      background: #eff6ff;
+      color: #1e40af;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .tab {
+      background: #fff;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+    }
+
+    .tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .player-stat-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .player-stat-list { grid-template-columns: 1fr; }
+    }
+
+    .player-stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      padding: 14px;
+    }
+
+    .player-stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .player-title {
+      min-width: 0;
+    }
+
+    .player-name {
+      font-size: 18px;
+      font-weight: 950;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .player-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .quick-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .quick-metric {
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .quick-metric .k {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .quick-metric .v {
+      font-size: 16px;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .skill-group {
+      margin-bottom: 9px;
+      padding: 9px;
+      background: #f9fafb;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .skill-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      font-weight: 950;
+      font-size: 14px;
+    }
+
+    .skill-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .skill-buttons.count-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    @media (max-width: 520px) {
+      .skill-buttons, .skill-buttons.count-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .quick-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+      .quick-metric { padding: 7px 4px; }
+      .quick-metric .v { font-size: 14px; }
+    }
+
+    .skill-btn {
+      min-height: 44px;
+      padding: 9px 6px;
+      line-height: 1.15;
+      font-size: 13px;
+    }
+
+    .positive { background: var(--success-soft); color: #166534; }
+    .neutral { background: #eef2ff; color: #3730a3; }
+    .negative { background: var(--danger-soft); color: #991b1b; }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 900px) { .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px) { .summary-cards { grid-template-columns: 1fr; } }
+
+    .metric-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .metric-card .label { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .metric-card .value { font-size: 24px; font-weight: 950; margin-top: 4px; }
+    .metric-card .desc { color: var(--muted); font-size: 12px; margin-top: 4px; line-height: 1.4; }
+
+    .team-mini {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 720px) { .team-mini { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 920px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f9fafb;
+      color: #374151;
+      font-size: 12px;
+      text-transform: none;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 900;
+      background: #f3f4f6;
+      color: #374151;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .tag.mvp { background: #fef3c7; color: #92400e; }
+    .tag.bad { background: #fee2e2; color: #991b1b; }
+    .tag.good { background: #dcfce7; color: #166534; }
+    .tag.blue { background: #dbeafe; color: #1e40af; }
+
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      padding: 8px max(8px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom));
+      display: none;
+      gap: 8px;
+    }
+
+    .bottom-nav button { flex: 1; padding: 11px 8px; font-size: 13px; }
+    @media (max-width: 760px) { .bottom-nav { display: flex; } }
+
+    .desktop-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    @media (max-width: 760px) { .desktop-actions { display: none; } }
+
+    .hidden { display: none !important; }
+
+    .last-action {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .danger-zone {
+      border-color: #fecaca;
+      background: #fff7f7;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div>
+          <h1>排球技术统计 v2.1</h1>
+          <div class="sub" id="subtitle">全员卡片式｜质量分级｜成功率｜效率｜MVP｜赔钱货</div>
+        </div>
+        <div class="pill" id="statusPill">离线版</div>
+      </div>
+    </div>
+
+    <section id="setupView" class="view">
+      <div class="card">
+        <h2>创建比赛</h2>
+        <div class="grid grid-2">
+          <div>
+            <label>比赛名称</label>
+            <input id="matchName" placeholder="例如：周五训练赛" />
+          </div>
+          <div>
+            <label>当前局数</label>
+            <input id="initialSet" type="number" min="1" value="1" />
+          </div>
+        </div>
+        <div class="notice" style="margin-top:12px;">
+          v2.1 改为全员卡片式统计：每个球员卡片里直接有自己的技术按钮，不需要先切换球员。数据保存在本机浏览器，离线可用。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row between">
+          <h2>球员与位置</h2>
+          <button class="btn-primary" onclick="addPlayerRow()">添加球员</button>
+        </div>
+        <div id="playerRows"></div>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn-primary" onclick="startMatch()">开始统计</button>
+          <button class="btn-ghost" onclick="loadDemoPlayers()">填入示例阵容</button>
+          <button class="btn-danger" onclick="clearAllData()">清空本地数据</button>
+        </div>
+        <p class="muted small">位置：主攻 OH｜副攻 MB｜接应 OP｜二传 S｜自由人 L｜替补 SUB。</p>
+      </div>
+    </section>
+
+    <section id="statView" class="view hidden">
+      <div class="card">
+        <div class="row between">
+          <div>
+            <h2 id="matchTitle">比赛统计</h2>
+            <div class="muted small" id="setInfo">第 1 局</div>
+          </div>
+          <div class="desktop-actions">
+            <button class="btn-outline" onclick="switchView('setup')">阵容</button>
+            <button class="btn-warning" onclick="undoLast()">撤销</button>
+            <button class="btn-primary" onclick="endSet()">结束本局</button>
+            <button class="btn-success" onclick="switchView('report')">查看统计</button>
+          </div>
+        </div>
+        <div class="last-action" id="lastAction">还没有动作记录。</div>
+      </div>
+
+      <div class="card">
+        <h3>本局 / 全场简易预览</h3>
+        <div id="teamMini" class="team-mini"></div>
+      </div>
+
+      <div class="card">
+        <h3>全员技术统计面板</h3>
+        <div class="muted small" style="margin-bottom:12px;">看到谁做了动作，就直接在对应球员卡片里点击。每张卡片上方显示该球员当前局的简单数据。</div>
+        <div id="playerStatList" class="player-stat-list"></div>
+      </div>
+    </section>
+
+    <section id="reportView" class="view hidden">
+      <div class="card">
+        <div class="row between">
+          <div>
+            <h2>数据统计</h2>
+            <div class="muted small">可切换单局 / 全场。MVP 与赔钱货基于样本量、净贡献和综合效率自动判断。</div>
+          </div>
+          <div class="desktop-actions">
+            <button class="btn-outline" onclick="switchView('stat')">返回统计</button>
+            <button class="btn-primary" onclick="exportCSV()">导出 CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>选择统计范围</h3>
+        <div id="reportTabs" class="tabs"></div>
+      </div>
+
+      <div class="card">
+        <h3>全场总览</h3>
+        <div id="awardSummary" class="summary-cards"></div>
+      </div>
+
+      <div class="card">
+        <h3>综合排名</h3>
+        <div id="rankingTable" class="table-wrap"></div>
+      </div>
+
+      <div class="card">
+        <h3>单项技术榜</h3>
+        <div id="skillTables"></div>
+      </div>
+
+      <div class="card danger-zone">
+        <h3>危险操作</h3>
+        <div class="row">
+          <button class="btn-danger" onclick="clearActionsOnly()">只清空本场动作</button>
+          <button class="btn-danger" onclick="clearAllData()">清空全部数据</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="bottom-nav" id="bottomNav">
+    <button class="btn-outline" onclick="switchView('setup')">阵容</button>
+    <button class="btn-warning" onclick="undoLast()">撤销</button>
+    <button class="btn-primary" onclick="endSet()">结束本局</button>
+    <button class="btn-success" onclick="switchView('report')">统计</button>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'volleyball_stats_v21_state';
+
+    const POSITIONS = [
+      { value: 'OH', label: '主攻 OH' },
+      { value: 'MB', label: '副攻 MB' },
+      { value: 'OP', label: '接应 OP' },
+      { value: 'S', label: '二传 S' },
+      { value: 'L', label: '自由人 L' },
+      { value: 'SUB', label: '替补 SUB' },
+    ];
+
+    const SKILLS = {
+      receive: {
+        name: '一传',
+        outcomes: [
+          { key: 'perfect', label: '到位', short: '到位', score: 1, className: 'positive' },
+          { key: 'ok', label: '半到位', short: '半到位', score: 0, className: 'neutral' },
+          { key: 'error', label: '失误', short: '失误', score: -1, className: 'negative' },
+        ]
+      },
+      defense: {
+        name: '防守',
+        outcomes: [
+          { key: 'effective', label: '有效', short: '有效', score: 1.5, className: 'positive' },
+          { key: 'dig', label: '起球', short: '起球', score: 1, className: 'positive' },
+          { key: 'error', label: '失误', short: '失误', score: -1, className: 'negative' },
+        ]
+      },
+      attack: {
+        name: '进攻',
+        outcomes: [
+          { key: 'kill', label: '得分', short: '得分', score: 2, className: 'positive' },
+          { key: 'effective', label: '有效', short: '有效', score: 1, className: 'positive' },
+          { key: 'blocked', label: '被拦', short: '被拦', score: -1, className: 'negative' },
+          { key: 'error', label: '失误', short: '失误', score: -1.5, className: 'negative' },
+        ]
+      },
+      serve: {
+        name: '发球',
+        outcomes: [
+          { key: 'ace', label: 'Ace', short: 'Ace', score: 2, className: 'positive' },
+          { key: 'pressure', label: '破坏', short: '破坏', score: 1, className: 'positive' },
+          { key: 'normal', label: '一般', short: '一般', score: 0, className: 'neutral' },
+          { key: 'error', label: '失误', short: '失误', score: -1.5, className: 'negative' },
+        ]
+      },
+      set: {
+        name: '二传',
+        outcomes: [
+          { key: 'good', label: '好球', short: '好球', score: 1, className: 'positive' },
+          { key: 'normal', label: '一般', short: '一般', score: 0, className: 'neutral' },
+          { key: 'mismatch', label: '失配', short: '失配', score: -0.5, className: 'negative' },
+          { key: 'error', label: '失误', short: '失误', score: -1.5, className: 'negative' },
+        ]
+      },
+    };
+
+    const state = loadState() || {
+      matchName: '',
+      currentSet: 1,
+      players: [],
+      actions: [],
+      currentView: 'setup',
+      reportScope: 'all'
+    };
+
+    function uid(prefix) {
+      return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      render();
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function addPlayerRow(player = {}) {
+      if (!state.players) state.players = [];
+      if (state.players.length >= 12) {
+        alert('最多支持 12 名队员。');
+        return;
+      }
+      state.players.push({
+        id: player.id || uid('player'),
+        number: player.number || '',
+        name: player.name || '',
+        position: player.position || 'OH'
+      });
+      saveState();
+    }
+
+    function removePlayer(id) {
+      if (state.actions.some(a => a.playerId === id)) {
+        alert('该球员已有技术统计记录，不能直接删除。可以先清空动作记录。');
+        return;
+      }
+      state.players = state.players.filter(p => p.id !== id);
+      saveState();
+    }
+
+    function updatePlayer(id, field, value) {
+      const p = state.players.find(x => x.id === id);
+      if (!p) return;
+      p[field] = value;
+      persistOnly();
+    }
+
+    function persistOnly() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadDemoPlayers() {
+      state.players = [
+        { id: uid('player'), number: '1', name: '小王', position: 'OH' },
+        { id: uid('player'), number: '2', name: '小李', position: 'S' },
+        { id: uid('player'), number: '3', name: '小张', position: 'L' },
+        { id: uid('player'), number: '4', name: '小陈', position: 'MB' },
+        { id: uid('player'), number: '5', name: '阿林', position: 'OP' },
+        { id: uid('player'), number: '6', name: '阿杰', position: 'OH' },
+      ];
+      state.matchName = document.getElementById('matchName').value || '周五训练赛';
+      saveState();
+    }
+
+    function startMatch() {
+      const nameInput = document.getElementById('matchName');
+      const setInput = document.getElementById('initialSet');
+      state.matchName = (nameInput.value || '未命名比赛').trim();
+      state.currentSet = Math.max(1, Number(setInput.value || 1));
+
+      for (const p of state.players) {
+        if (!p.name.trim()) {
+          alert('请补全所有球员姓名。');
+          return;
+        }
+      }
+
+      if (state.players.length < 6 || state.players.length > 12) {
+        alert('球员人数需要在 6–12 人之间。');
+        return;
+      }
+
+      state.currentView = 'stat';
+      saveState();
+    }
+
+    function switchView(view) {
+      if (view !== 'setup' && state.players.length < 6) {
+        alert('请先录入至少 6 名球员。');
+        return;
+      }
+      state.currentView = view;
+      if (view === 'report') buildReport();
+      saveState();
+    }
+
+    function recordAction(playerId, skillKey, outcomeKey) {
+      const player = state.players.find(p => p.id === playerId);
+      if (!player) {
+        alert('找不到该球员。');
+        return;
+      }
+      const skill = SKILLS[skillKey];
+      const outcome = skill.outcomes.find(o => o.key === outcomeKey);
+      if (!skill || !outcome) return;
+      state.actions.push({
+        id: uid('action'),
+        setNumber: state.currentSet,
+        playerId: player.id,
+        skill: skillKey,
+        outcome: outcomeKey,
+        skillName: skill.name,
+        outcomeName: outcome.short,
+        score: outcome.score,
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+    }
+
+    function undoLast() {
+      if (!state.actions.length) {
+        alert('没有可撤销的动作。');
+        return;
+      }
+      state.actions.pop();
+      saveState();
+    }
+
+    function endSet() {
+      const ok = confirm(`确认结束第 ${state.currentSet} 局，并进入第 ${state.currentSet + 1} 局？`);
+      if (!ok) return;
+      state.currentSet += 1;
+      saveState();
+    }
+
+    function clearActionsOnly() {
+      if (!confirm('确认清空本场所有动作记录？球员名单会保留。')) return;
+      state.actions = [];
+      state.currentSet = 1;
+      state.reportScope = 'all';
+      saveState();
+    }
+
+    function clearAllData() {
+      if (!confirm('确认清空全部数据？包括球员、比赛和动作记录。')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+
+    function posLabel(pos) {
+      return POSITIONS.find(p => p.value === pos)?.label || pos;
+    }
+
+    function fmtPct(v) {
+      if (v === null || v === undefined || Number.isNaN(v)) return '-';
+      return `${Math.round(v * 100)}%`;
+    }
+
+    function fmtNum(v) {
+      if (v === null || v === undefined || Number.isNaN(v)) return '-';
+      const rounded = Math.round(v * 10) / 10;
+      return rounded > 0 ? `+${rounded}` : String(rounded);
+    }
+
+    function actionsForScope(scope) {
+      if (scope === 'all') return state.actions;
+      return state.actions.filter(a => String(a.setNumber) === String(scope));
+    }
+
+    function initStatsForPlayer(player) {
+      const skillStats = {};
+      Object.entries(SKILLS).forEach(([skillKey, skill]) => {
+        skillStats[skillKey] = { total: 0 };
+        skill.outcomes.forEach(o => skillStats[skillKey][o.key] = 0);
+      });
+      return {
+        player,
+        totalActions: 0,
+        positive: 0,
+        negative: 0,
+        net: 0,
+        errors: 0,
+        errorRate: null,
+        efficiency: null,
+        skillStats,
+        tags: []
+      };
+    }
+
+    function computeStats(scope = 'all') {
+      const map = new Map();
+      state.players.forEach(p => map.set(p.id, initStatsForPlayer(p)));
+      const actions = actionsForScope(scope);
+
+      actions.forEach(a => {
+        const s = map.get(a.playerId);
+        if (!s) return;
+        s.totalActions += 1;
+        s.net += a.score;
+        if (a.score > 0) s.positive += a.score;
+        if (a.score < 0) {
+          s.negative += a.score;
+          s.errors += 1;
+        }
+        const ss = s.skillStats[a.skill];
+        if (ss) {
+          ss.total += 1;
+          ss[a.outcome] = (ss[a.outcome] || 0) + 1;
+        }
+      });
+
+      const rows = Array.from(map.values()).map(s => {
+        s.efficiency = s.totalActions ? s.net / s.totalActions : null;
+        s.errorRate = s.totalActions ? s.errors / s.totalActions : null;
+        s.skillMetrics = computeSkillMetrics(s.skillStats);
+        return s;
+      });
+
+      assignTags(rows);
+      rows.sort((a, b) => {
+        if (b.net !== a.net) return b.net - a.net;
+        return (b.efficiency || -999) - (a.efficiency || -999);
+      });
+      return rows;
+    }
+
+    function computeSkillMetrics(skillStats) {
+      const r = {};
+      const receive = skillStats.receive;
+      r.receive = {
+        success: receive.total ? receive.perfect / receive.total : null,
+        efficiency: receive.total ? (receive.perfect - receive.error) / receive.total : null,
+      };
+
+      const defense = skillStats.defense;
+      r.defense = {
+        success: defense.total ? (defense.effective + defense.dig) / defense.total : null,
+        efficiency: defense.total ? (defense.effective + defense.dig - defense.error) / defense.total : null,
+      };
+
+      const attack = skillStats.attack;
+      r.attack = {
+        success: attack.total ? attack.kill / attack.total : null,
+        efficiency: attack.total ? (attack.kill - attack.blocked - attack.error) / attack.total : null,
+      };
+
+      const serve = skillStats.serve;
+      r.serve = {
+        success: serve.total ? (serve.ace + serve.pressure + serve.normal) / serve.total : null,
+        efficiency: serve.total ? (serve.ace + serve.pressure - serve.error) / serve.total : null,
+      };
+
+      const set = skillStats.set;
+      r.set = {
+        success: set.total ? set.good / set.total : null,
+        efficiency: set.total ? (set.good - set.mismatch - set.error) / set.total : null,
+      };
+
+      return r;
+    }
+
+    function assignTags(rows) {
+      rows.forEach(r => r.tags = []);
+      const eligibleMvp = rows.filter(r => r.totalActions >= 10);
+      const eligibleBad = rows.filter(r => r.totalActions >= 8);
+
+      if (eligibleMvp.length) {
+        const mvp = [...eligibleMvp].sort((a,b) => b.net - a.net || (b.efficiency || 0) - (a.efficiency || 0))[0];
+        mvp.tags.push({ text: 'MVP', className: 'mvp' });
+      }
+      if (eligibleBad.length) {
+        const bad = [...eligibleBad].sort((a,b) => a.net - b.net || (a.efficiency || 0) - (b.efficiency || 0))[0];
+        bad.tags.push({ text: '赔钱货', className: 'bad' });
+      }
+
+      const skillLeaders = [
+        { skill: 'attack', outcome: 'kill', label: '进攻核心', min: 3, className: 'good' },
+        { skill: 'serve', outcome: null, label: '发球杀器', min: 3, className: 'blue', valueFn: r => r.skillStats.serve.ace + r.skillStats.serve.pressure },
+        { skill: 'defense', outcome: 'effective', label: '防守大爹', min: 3, className: 'good' },
+        { skill: 'receive', outcome: 'perfect', label: '一传大爹', min: 3, className: 'blue' },
+        { skill: 'set', outcome: 'good', label: '二传发动机', min: 8, className: 'blue' },
+      ];
+
+      skillLeaders.forEach(item => {
+        const best = [...rows].sort((a,b) => {
+          const av = item.valueFn ? item.valueFn(a) : a.skillStats[item.skill][item.outcome];
+          const bv = item.valueFn ? item.valueFn(b) : b.skillStats[item.skill][item.outcome];
+          return bv - av;
+        })[0];
+        if (!best) return;
+        const v = item.valueFn ? item.valueFn(best) : best.skillStats[item.skill][item.outcome];
+        if (v >= item.min) best.tags.push({ text: item.label, className: item.className });
+      });
+
+      rows.forEach(r => {
+        if (r.totalActions > 0 && r.totalActions < 5) r.tags.push({ text: '隐身人', className: '' });
+        if (r.totalActions >= 15 && r.errorRate !== null && r.errorRate <= 0.08) r.tags.push({ text: '稳定机器', className: 'good' });
+        if (r.skillStats.attack.total >= 8 && r.skillMetrics.attack.efficiency !== null && r.skillMetrics.attack.efficiency < 0) {
+          r.tags.push({ text: '毒瘤输出', className: 'bad' });
+        }
+      });
+    }
+
+    function getAward(rows, tagText) {
+      return rows.find(r => r.tags.some(t => t.text === tagText));
+    }
+
+    function render() {
+      renderSetup();
+      renderStat();
+      renderViewState();
+      if (state.currentView === 'report') buildReport();
+      persistOnly();
+    }
+
+    function renderViewState() {
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(`${state.currentView}View`).classList.remove('hidden');
+      document.getElementById('bottomNav').style.display = state.currentView === 'setup' ? 'none' : '';
+      document.getElementById('subtitle').textContent = state.matchName ? `${state.matchName}｜第 ${state.currentSet} 局` : '全员卡片式｜质量分级｜成功率｜效率｜MVP｜赔钱货';
+      document.getElementById('statusPill').textContent = state.actions.length ? `${state.actions.length} 条记录` : '离线版';
+    }
+
+    function renderSetup() {
+      document.getElementById('matchName').value = state.matchName || '';
+      document.getElementById('initialSet').value = state.currentSet || 1;
+
+      const box = document.getElementById('playerRows');
+      box.innerHTML = '';
+      state.players.forEach((p, idx) => {
+        const div = document.createElement('div');
+        div.className = 'player-row';
+        div.innerHTML = `
+          <div>
+            <label>背号</label>
+            <input value="${escapeHtml(p.number)}" placeholder="#" onchange="updatePlayer('${p.id}', 'number', this.value)" />
+          </div>
+          <div>
+            <label>姓名</label>
+            <input value="${escapeHtml(p.name)}" placeholder="球员 ${idx + 1}" onchange="updatePlayer('${p.id}', 'name', this.value)" />
+          </div>
+          <div>
+            <label>位置</label>
+            <select onchange="updatePlayer('${p.id}', 'position', this.value)">
+              ${POSITIONS.map(pos => `<option value="${pos.value}" ${pos.value === p.position ? 'selected' : ''}>${pos.label}</option>`).join('')}
+            </select>
+          </div>
+          <button class="btn-danger" onclick="removePlayer('${p.id}')">删</button>
+        `;
+        box.appendChild(div);
+      });
+      if (state.players.length === 0) {
+        for (let i = 0; i < 6; i++) addPlayerRow({});
+      }
+    }
+
+    function renderStat() {
+      document.getElementById('matchTitle').textContent = state.matchName || '未命名比赛';
+      document.getElementById('setInfo').textContent = `当前：第 ${state.currentSet} 局｜总动作 ${state.actions.length} 次`;
+      renderLastAction();
+      renderTeamMini();
+      renderPlayerStatCards();
+    }
+
+    function renderTeamMini() {
+      const currentRows = computeStats(String(state.currentSet));
+      const allRows = computeStats('all');
+      const currentActions = actionsForScope(String(state.currentSet)).length;
+      const allActions = state.actions.length;
+      const currentNet = currentRows.reduce((sum, r) => sum + r.net, 0);
+      const allNet = allRows.reduce((sum, r) => sum + r.net, 0);
+      const mvp = getAward(allRows, 'MVP');
+      const bad = getAward(allRows, '赔钱货');
+      document.getElementById('teamMini').innerHTML = `
+        <div class="metric-card"><div class="label">本局动作</div><div class="value">${currentActions}</div><div class="desc">第 ${state.currentSet} 局已记录</div></div>
+        <div class="metric-card"><div class="label">本局净贡献</div><div class="value">${fmtNum(currentNet)}</div><div class="desc">当前局全队合计</div></div>
+        <div class="metric-card"><div class="label">全场 MVP</div><div class="value">${mvp ? escapeHtml(mvp.player.name) : '-'}</div><div class="desc">全场动作 ${allActions}｜净 ${fmtNum(allNet)}</div></div>
+        <div class="metric-card"><div class="label">全场赔钱货</div><div class="value">${bad ? escapeHtml(bad.player.name) : '-'}</div><div class="desc">样本满 8 次后评选</div></div>
+      `;
+    }
+
+    function renderPlayerStatCards() {
+      const currentRows = computeStats(String(state.currentSet));
+      const byId = new Map(currentRows.map(r => [r.player.id, r]));
+      const box = document.getElementById('playerStatList');
+      box.innerHTML = state.players.map(p => {
+        const r = byId.get(p.id) || initStatsForPlayer(p);
+        r.skillMetrics = r.skillMetrics || computeSkillMetrics(r.skillStats);
+        return `
+          <div class="player-stat-card">
+            <div class="player-stat-header">
+              <div class="player-title">
+                <div class="player-name">${escapeHtml(p.name || '未命名')}</div>
+                <div class="player-meta">${p.number ? '#' + escapeHtml(p.number) + '｜' : ''}${posLabel(p.position)}｜当前第 ${state.currentSet} 局</div>
+              </div>
+              <div>${tagHtml(r.tags)}</div>
+            </div>
+            <div class="quick-metrics">
+              <div class="quick-metric"><div class="k">总</div><div class="v">${r.totalActions}</div></div>
+              <div class="quick-metric"><div class="k">净</div><div class="v">${fmtNum(r.net)}</div></div>
+              <div class="quick-metric"><div class="k">效</div><div class="v">${fmtPct(r.efficiency)}</div></div>
+              <div class="quick-metric"><div class="k">误</div><div class="v">${r.errors}</div></div>
+            </div>
+            ${Object.entries(SKILLS).map(([skillKey, skill]) => `
+              <div class="skill-group">
+                <div class="skill-title">
+                  <span>${skill.name}</span>
+                  <span class="muted small">${r.skillStats[skillKey].total} 次｜效 ${fmtPct(r.skillMetrics[skillKey].efficiency)}</span>
+                </div>
+                <div class="skill-buttons ${skill.outcomes.length === 3 ? 'count-3' : ''}">
+                  ${skill.outcomes.map(o => `<button class="skill-btn ${o.className}" onclick="recordAction('${p.id}', '${skillKey}', '${o.key}')">${o.label}</button>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLastAction() {
+      const el = document.getElementById('lastAction');
+      const last = state.actions[state.actions.length - 1];
+      if (!last) {
+        el.textContent = '还没有动作记录。';
+        return;
+      }
+      const p = state.players.find(x => x.id === last.playerId);
+      el.textContent = `上一条：第 ${last.setNumber} 局｜${p ? p.name : '未知球员'}｜${last.skillName} - ${last.outcomeName}｜${fmtNum(last.score)}`;
+    }
+
+    function buildReport() {
+      renderReportTabs();
+      const rows = computeStats(state.reportScope);
+      renderAwardSummary(rows);
+      renderRankingTable(rows);
+      renderSkillTables(rows);
+    }
+
+    function renderReportTabs() {
+      const sets = Array.from(new Set(state.actions.map(a => a.setNumber))).sort((a,b) => a - b);
+      const tabs = [{ key: 'all', label: '全场' }, ...sets.map(s => ({ key: String(s), label: `第 ${s} 局` }))];
+      const box = document.getElementById('reportTabs');
+      box.innerHTML = tabs.map(t => `<button class="tab ${String(state.reportScope) === String(t.key) ? 'active' : ''}" onclick="setReportScope('${t.key}')">${t.label}</button>`).join('');
+    }
+
+    function setReportScope(scope) {
+      state.reportScope = scope;
+      saveState();
+    }
+
+    function renderAwardSummary(rows) {
+      const mvp = getAward(rows, 'MVP');
+      const bad = getAward(rows, '赔钱货');
+      const totalActions = actionsForScope(state.reportScope).length;
+      const netSum = rows.reduce((sum, r) => sum + r.net, 0);
+
+      const cards = [
+        {
+          label: 'MVP',
+          value: mvp ? mvp.player.name : '-',
+          desc: mvp ? `净贡献 ${fmtNum(mvp.net)}｜综合效率 ${fmtPct(mvp.efficiency)}｜动作 ${mvp.totalActions}` : '样本不足，暂不评选。'
+        },
+        {
+          label: '赔钱货',
+          value: bad ? bad.player.name : '-',
+          desc: bad ? `净贡献 ${fmtNum(bad.net)}｜综合效率 ${fmtPct(bad.efficiency)}｜失误 ${bad.errors}` : '样本不足，暂不评选。'
+        },
+        {
+          label: '统计动作',
+          value: totalActions,
+          desc: state.reportScope === 'all' ? '全场总动作数' : `第 ${state.reportScope} 局动作数`
+        },
+        {
+          label: '全队净贡献',
+          value: fmtNum(netSum),
+          desc: '所有动作分值合计'
+        }
+      ];
+
+      document.getElementById('awardSummary').innerHTML = cards.map(c => `
+        <div class="metric-card">
+          <div class="label">${c.label}</div>
+          <div class="value">${escapeHtml(String(c.value))}</div>
+          <div class="desc">${escapeHtml(c.desc)}</div>
+        </div>
+      `).join('');
+    }
+
+    function tagHtml(tags) {
+      if (!tags.length) return '';
+      return tags.map(t => `<span class="tag ${t.className}">${escapeHtml(t.text)}</span>`).join('');
+    }
+
+    function renderRankingTable(rows) {
+      const html = `
+        <table>
+          <thead>
+            <tr>
+              <th>排名</th><th>球员</th><th>位置</th><th class="num">动作</th><th class="num">正贡献</th><th class="num">负贡献</th><th class="num">净贡献</th><th class="num">综合效率</th><th class="num">失误</th><th class="num">失误率</th><th>标签</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${escapeHtml(r.player.name)}</td>
+                <td>${posLabel(r.player.position)}</td>
+                <td class="num">${r.totalActions}</td>
+                <td class="num">${fmtNum(r.positive)}</td>
+                <td class="num">${fmtNum(r.negative)}</td>
+                <td class="num"><strong>${fmtNum(r.net)}</strong></td>
+                <td class="num">${fmtPct(r.efficiency)}</td>
+                <td class="num">${r.errors}</td>
+                <td class="num">${fmtPct(r.errorRate)}</td>
+                <td>${tagHtml(r.tags) || '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      document.getElementById('rankingTable').innerHTML = html;
+    }
+
+    function renderSkillTables(rows) {
+      const skillTables = Object.entries(SKILLS).map(([skillKey, skill]) => {
+        const sorted = [...rows].sort((a, b) => {
+          const bt = b.skillStats[skillKey].total;
+          const at = a.skillStats[skillKey].total;
+          const be = b.skillMetrics[skillKey].efficiency ?? -999;
+          const ae = a.skillMetrics[skillKey].efficiency ?? -999;
+          return be - ae || bt - at;
+        });
+        return `
+          <h3 style="margin-top:18px;">${skill.name}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>球员</th><th>位置</th><th class="num">总数</th>
+                  ${skill.outcomes.map(o => `<th class="num">${o.short}</th>`).join('')}
+                  <th class="num">成功率</th><th class="num">效率</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sorted.map(r => {
+                  const ss = r.skillStats[skillKey];
+                  const sm = r.skillMetrics[skillKey];
+                  return `
+                    <tr>
+                      <td>${escapeHtml(r.player.name)}</td>
+                      <td>${posLabel(r.player.position)}</td>
+                      <td class="num">${ss.total}</td>
+                      ${skill.outcomes.map(o => `<td class="num">${ss[o.key] || 0}</td>`).join('')}
+                      <td class="num">${fmtPct(sm.success)}</td>
+                      <td class="num">${fmtPct(sm.efficiency)}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('skillTables').innerHTML = skillTables;
+    }
+
+    function exportCSV() {
+      const rows = computeStats(state.reportScope);
+      const header = ['排名','球员','位置','动作','正贡献','负贡献','净贡献','综合效率','失误','失误率','标签'];
+      const lines = [header.join(',')];
+      rows.forEach((r, i) => {
+        lines.push([
+          i + 1,
+          csvSafe(r.player.name),
+          csvSafe(posLabel(r.player.position)),
+          r.totalActions,
+          r.positive,
+          r.negative,
+          r.net,
+          r.efficiency == null ? '' : Math.round(r.efficiency * 1000) / 10 + '%',
+          r.errors,
+          r.errorRate == null ? '' : Math.round(r.errorRate * 1000) / 10 + '%',
+          csvSafe(r.tags.map(t => t.text).join(' / '))
+        ].join(','));
+      });
+      const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${state.matchName || 'volleyball_stats'}_${state.reportScope === 'all' ? 'all' : 'set_' + state.reportScope}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function csvSafe(v) {
+      const s = String(v ?? '');
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>'"]/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[c]));
+    }
+
+    window.addEventListener('beforeunload', persistOnly);
+    render();
+  </script>
+</body>
+</html>
